@@ -1,1 +1,548 @@
-This is it. 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dave & Mike — Golf Nonsense</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Rye&family=Outfit:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-top: #2a1458;
+      --bg-mid: #0f4c81;
+      --bg-bottom: #0c7c59;
+      --card-a: rgba(255, 111, 145, 0.18);
+      --card-b: rgba(255, 199, 95, 0.16);
+      --card-c: rgba(88, 214, 141, 0.14);
+      --pink: #ff6f91;
+      --yellow: #ffc75f;
+      --mint: #58d68d;
+      --cyan: #72ddf7;
+      --cream: #fff8ea;
+      --white: #ffffff;
+      --shadow: rgba(0, 0, 0, 0.35);
+      --border: rgba(255,255,255,0.16);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      color: var(--cream);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.5;
+      background:
+        radial-gradient(circle at 15% 15%, rgba(255,111,145,0.35), transparent 28%),
+        radial-gradient(circle at 85% 20%, rgba(255,199,95,0.28), transparent 25%),
+        radial-gradient(circle at 55% 80%, rgba(88,214,141,0.22), transparent 35%),
+        linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 52%, var(--bg-bottom) 100%);
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.05;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px);
+      background-size: 28px 28px;
+      z-index: 0;
+    }
+
+    .hero,
+    .duo-section,
+    .rules-section,
+    footer {
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 56px 22px 80px;
+    }
+
+    .hero-badge {
+      margin-bottom: 28px;
+      animation: fadeUp 0.8s ease-out both;
+      filter: drop-shadow(0 12px 28px rgba(0,0,0,0.3));
+    }
+
+    .hero-title {
+      font-family: 'Rye', serif;
+      font-size: clamp(52px, 9vw, 104px);
+      line-height: 1;
+      color: var(--white);
+      letter-spacing: 1px;
+      margin-bottom: 14px;
+      text-shadow: 0 4px 18px rgba(0,0,0,0.35);
+      animation: fadeUp 0.8s ease-out 0.1s both;
+    }
+
+    .hero-subtitle {
+      font-family: 'DM Mono', monospace;
+      font-size: clamp(18px, 2.7vw, 30px);
+      color: var(--yellow);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 22px;
+      animation: fadeUp 0.8s ease-out 0.2s both;
+    }
+
+    .hero-tagline {
+      font-size: clamp(22px, 2.8vw, 34px);
+      font-weight: 700;
+      max-width: 980px;
+      color: var(--cream);
+      margin-bottom: 48px;
+      animation: fadeUp 0.8s ease-out 0.3s both;
+    }
+
+    .scorecards {
+      width: 100%;
+      max-width: 960px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 24px;
+      animation: fadeUp 0.8s ease-out 0.45s both;
+    }
+
+    .score-card {
+      flex: 1 1 360px;
+      max-width: 430px;
+      padding: 30px 28px;
+      border-radius: 24px;
+      text-decoration: none;
+      color: var(--cream);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 18px 42px var(--shadow);
+      transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .score-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0.95;
+      z-index: -1;
+    }
+
+    .score-card.dave::before {
+      background: linear-gradient(145deg, var(--card-a), rgba(114,221,247,0.12));
+    }
+
+    .score-card.mike::before {
+      background: linear-gradient(145deg, var(--card-b), var(--card-c));
+    }
+
+    .score-card:hover {
+      transform: translateY(-6px) rotate(-0.4deg);
+      box-shadow: 0 24px 50px rgba(0,0,0,0.42);
+      border-color: rgba(255,255,255,0.28);
+    }
+
+    .card-icon {
+      width: 68px;
+      height: 68px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 18px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
+    }
+
+    .dave .card-icon {
+      background: linear-gradient(135deg, #ff6f91, #845ec2);
+    }
+
+    .mike .card-icon {
+      background: linear-gradient(135deg, #ffc75f, #58d68d);
+    }
+
+    .card-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'DM Mono', monospace;
+      font-size: 16px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      margin-bottom: 16px;
+    }
+
+    .status-chaos {
+      background: rgba(255,111,145,0.18);
+      color: #ffd3de;
+      border: 1px solid rgba(255,111,145,0.3);
+    }
+
+    .status-danger {
+      background: rgba(255,199,95,0.18);
+      color: #fff0bf;
+      border: 1px solid rgba(255,199,95,0.3);
+    }
+
+    .card-title {
+      font-size: 40px;
+      line-height: 1.05;
+      font-weight: 800;
+      color: var(--white);
+      margin-bottom: 10px;
+    }
+
+    .card-subtitle {
+      font-size: 22px;
+      color: rgba(255,248,234,0.92);
+      margin-bottom: 14px;
+      font-weight: 500;
+    }
+
+    .card-dates {
+      font-family: 'DM Mono', monospace;
+      font-size: 17px;
+      color: var(--cyan);
+      margin-bottom: 20px;
+    }
+
+    .card-arrow {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--yellow);
+    }
+
+    .card-arrow svg {
+      transition: transform 0.25s ease;
+    }
+
+    .score-card:hover .card-arrow svg {
+      transform: translateX(4px);
+    }
+
+    .duo-section {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 72px 22px 90px;
+      text-align: center;
+    }
+
+    .duo-label {
+      font-family: 'DM Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      font-size: 19px;
+      color: var(--yellow);
+      margin-bottom: 12px;
+    }
+
+    .duo-title {
+      font-family: 'Rye', serif;
+      font-size: clamp(40px, 5vw, 62px);
+      color: var(--white);
+      margin-bottom: 38px;
+      line-height: 1.05;
+    }
+
+    .duo-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    .member-card {
+      border-radius: 22px;
+      padding: 30px 22px;
+      border: 1px solid var(--border);
+      background: rgba(8, 18, 38, 0.28);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 16px 36px rgba(0,0,0,0.28);
+      transition: transform 0.25s ease, border-color 0.25s ease;
+    }
+
+    .member-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255,255,255,0.24);
+    }
+
+    .member-avatar {
+      width: 74px;
+      height: 74px;
+      border-radius: 50%;
+      margin: 0 auto 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--white);
+      border: 3px solid rgba(255,255,255,0.18);
+      box-shadow: 0 8px 18px rgba(0,0,0,0.22);
+    }
+
+    .avatar-dave {
+      background: linear-gradient(135deg, #ff6f91, #845ec2);
+    }
+
+    .avatar-mike {
+      background: linear-gradient(135deg, #ffc75f, #00c2a8);
+    }
+
+    .member-name {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--white);
+      margin-bottom: 8px;
+    }
+
+    .member-full {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--yellow);
+      margin-bottom: 14px;
+    }
+
+    .member-quip {
+      font-family: 'DM Mono', monospace;
+      font-size: 17px;
+      line-height: 1.5;
+      color: rgba(255,248,234,0.9);
+    }
+
+    .rules-section {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 22px 72px;
+      text-align: center;
+    }
+
+    .rules-quote {
+      font-size: clamp(24px, 3vw, 34px);
+      font-weight: 800;
+      line-height: 1.45;
+      color: var(--white);
+      margin-bottom: 34px;
+    }
+
+    .rules-list {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 14px 24px;
+    }
+
+    .rules-list li {
+      font-family: 'DM Mono', monospace;
+      font-size: 18px;
+      color: rgba(255,248,234,0.92);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.08);
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .rules-list li::before {
+      content: '⛳';
+      font-size: 18px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 34px 20px 26px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .footer-text {
+      font-family: 'DM Mono', monospace;
+      font-size: 17px;
+      color: rgba(255,248,234,0.76);
+    }
+
+    a:focus-visible {
+      outline: 3px solid var(--yellow);
+      outline-offset: 4px;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 760px) {
+      .duo-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .card-title {
+        font-size: 32px;
+      }
+
+      .card-subtitle {
+        font-size: 20px;
+      }
+
+      .hero {
+        min-height: auto;
+        padding-top: 64px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .score-card,
+      .member-card {
+        padding: 22px 18px;
+      }
+
+      .rules-list li {
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <section class="hero">
+    <div class="hero-badge">
+      <svg width="116" height="116" viewBox="0 0 116 116" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <linearGradient id="badgeRing" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#ffc75f"/>
+            <stop offset="50%" stop-color="#ff6f91"/>
+            <stop offset="100%" stop-color="#72ddf7"/>
+          </linearGradient>
+          <linearGradient id="badgeFill" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#845ec2"/>
+            <stop offset="100%" stop-color="#0f4c81"/>
+          </linearGradient>
+        </defs>
+        <circle cx="58" cy="58" r="50" fill="none" stroke="url(#badgeRing)" stroke-width="4"/>
+        <circle cx="58" cy="58" r="37" fill="url(#badgeFill)"/>
+        <path d="M38 74 L58 36 L78 74" fill="none" stroke="#ffffff" stroke-width="5" stroke-linejoin="round"/>
+        <circle cx="58" cy="62" r="6" fill="#ffffff"/>
+      </svg>
+    </div>
+
+    <h1 class="hero-title">Dave & Mike</h1>
+    <p class="hero-subtitle">Two men · one fairway · several questionable numbers</p>
+    <p class="hero-tagline">A proud golf institution built on friendship, chirping, selective memory, and the firm belief that every triple can still be “saved.”</p>
+
+    <div class="scorecards">
+      <a href="dave.html" class="score-card dave" target="_blank" rel="noopener noreferrer">
+        <div class="card-icon">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3v18"/>
+            <path d="M12 5c4 0 6 2 6 4s-2 4-6 4"/>
+            <path d="M12 5c-4 0-6 2-6 4s2 4 6 4"/>
+          </svg>
+        </div>
+        <span class="card-status status-chaos">Active nonsense</span>
+        <div class="card-title">Dave’s Ledger</div>
+        <div class="card-subtitle">For David Michael D'Onofrio, keeper of stories and occasional score inflation investigations</div>
+        <div class="card-dates">Updated weekly · facts available upon appeal</div>
+        <div class="card-arrow">
+          Open Dave page
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </div>
+      </a>
+
+      <a href="mike.html" class="score-card mike" target="_blank" rel="noopener noreferrer">
+        <div class="card-icon">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 18h16"/>
+            <path d="M8 18l2-9h4l2 9"/>
+            <path d="M9 9c0-2 1.5-3 3-3s3 1 3 3"/>
+          </svg>
+        </div>
+        <span class="card-status status-danger">Mild hazard</span>
+        <div class="card-title">Mike’s Evidence</div>
+        <div class="card-subtitle">For Michael Jeffery Vierheller, patron saint of “that putt definitely broke more”</div>
+        <div class="card-dates">Open year-round · under review by absolutely no one</div>
+        <div class="card-arrow">
+          Open Mike page
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <section class="duo-section">
+    <div class="duo-label">Official duo profile</div>
+    <h2 class="duo-title">The Whole Operation Seems Unsupervised</h2>
+
+    <div class="duo-grid">
+      <div class="member-card">
+        <div class="member-avatar avatar-dave">D</div>
+        <div class="member-name">Dave</div>
+        <div class="member-full">David Michael D'Onofrio</div>
+        <div class="member-quip">
+          Claims he is “just trying to make solid contact,” then immediately starts calculating presses, side bets, and what everyone else shot on the last three holes. Known for heroic confidence, suspiciously positive post-round summaries, and the spiritual gift of locating one good shot and making it the headline of the day.
+        </div>
+      </div>
+
+      <div class="member-card">
+        <div class="member-avatar avatar-mike">M</div>
+        <div class="member-name">Mike</div>
+        <div class="member-full">Michael Jeffery Vierheller</div>
+        <div class="member-quip">
+          Operates with the calm of a man who has already decided the putter is the problem, the greens are unfair, and the wind was personally insulting. Delivers elite commentary, occasional brilliance, and the kind of facial expression usually seen right before someone says, “that is not where i was aimed.”
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="rules-section">
+    <p class="rules-quote">
+      “We solemnly swear to respect the game, honor the bets, exaggerate nothing except our best holes, and never let a terrible front nine ruin a perfectly delusional back nine.”
+    </p>
+
+    <ul class="rules-list">
+      <li>No gimmes longer than a marriage</li>
+      <li>Any lost ball may be remembered fondly</li>
+      <li>Three-putts require public reflection</li>
+      <li>“I usually hit that pure” is not legal evidence</li>
+      <li>One lucky par may be discussed all week</li>
+      <li>Club slams are allowed only with style</li>
+      <li>Venmo is faster than courtroom testimony</li>
+      <li>If both scores sound fake, lower one wins</li>
+    </ul>
+  </section>
+
+  <footer>
+    <div class="footer-text">Dave & Mike · 2026 Season · No committee. No mercy. No fully clean scorecards.</div>
+  </footer>
+
+</body>
+</html>
