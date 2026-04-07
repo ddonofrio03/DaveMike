@@ -253,6 +253,15 @@ const BETTORS = ["Dave","Mike"];
 const COLORS  = {Dave:"#6CABDD",Mike:"#b03a2e"};
 const ROUNDS  = 6; // 5 picks + 1 alt
 
+const PEER_OPTIONS = {
+  debug: 2,
+  config: {
+    iceServers: [
+      { urls: "stun:stun.l.google.com:19302" }
+    ]
+  }
+};
+
 // ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
@@ -422,7 +431,7 @@ function createRoom() {
   status.textContent = "Connecting...";
 
   roomCode = genCode();
-  peer = new Peer("davemike-" + roomCode, {debug: 0});
+  peer = new Peer("davemike-" + roomCode, PEER_OPTIONS);
   isHost = true;
 
   peer.on("open", () => {
@@ -513,7 +522,7 @@ function joinRoom() {
   status.textContent = "Connecting...";
 
   roomCode = code;
-  peer = new Peer(undefined, {debug: 0});
+  peer = new Peer(undefined, PEER_OPTIONS);
 
   peer.on("open", () => {
     hostConn = peer.connect("davemike-" + code, {reliable: true});
