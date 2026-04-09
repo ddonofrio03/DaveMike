@@ -898,7 +898,13 @@ function calcPoints() {
     }
   }
 
-  const buyIn = CONFIG.points.R1;
+  const buyIn =
+  CONFIG.points.R1 +
+  CONFIG.points.R2 +
+  CONFIG.points.R3 +
+  CONFIG.points.R4 +
+  CONFIG.points.Overall +
+  CONFIG.points.Winner;
 
   CONFIG.bettors.forEach(b => {
     const earned = pts[b].R1 + pts[b].R2 + pts[b].R3 + pts[b].R4 +
