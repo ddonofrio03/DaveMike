@@ -812,13 +812,7 @@ function isRoundComplete(roundKey) {
   const relevant = entries.filter(p => !p.isCut && !p.isWD && (p.r1holes ?? 0) > 0);
   if (!relevant.length) return false;
   const holesKey = roundKey + "holes";
-  if (relevant.every(p => (p[holesKey] ?? 0) === 18)) return true;
-  const rn = parseInt(roundKey[1]);
-  if (rn < 4) {
-    const nextKey = "r" + (rn + 1) + "holes";
-    return relevant.some(p => (p[nextKey] ?? 0) > 0);
-  }
-  return false;
+  return relevant.every(p => (p[holesKey] ?? 0) === 18);
 }
 
 function isTournamentFinal() {
