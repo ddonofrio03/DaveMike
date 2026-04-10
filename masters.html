@@ -935,6 +935,21 @@ async function fetchScores() {
 
   const sorted = [...(comp.competitors || [])].sort((a, b) => (a.order || 999) - (b.order || 999));
 
+  // Determine which round is currently active by finding the latest round with any data
+  let currentRoundIndex = -1;
+  sorted.forEach(p => {
+    const ls = p.linescores || [];
+    for (let i = ls.length - 1; i >= 0; i--) {
+      const entry = ls[i];
+      if (entry && (entry.displayValue || (entry.linescores && entry.linescores.length > 0))) {
+        if (i > currentRoundIndex) currentRoundIndex = i;
+        break;
+      }
+    }
+  });
+  // If no one has started any round yet, we're in round 0 (pre-tournament), but assume round 1 will start
+  if (currentRoundIndex === -1) currentRoundIndex = 0;
+
   sorted.forEach((p, idx) => {
     const name = p.athlete?.displayName;
     if (!name) return;
@@ -972,14 +987,20 @@ async function fetchScores() {
     let thru = "--";
     if (isCut || isWD) {
       thru = "CUT";
-    } else if (currentRoundData) {
-      const holes = currentRoundData.linescores || [];
-      if (holes.length === 0) {
-        thru = "--";
-      } else if (holes.length < 18) {
-        thru = String(holes.length);
+    } else {
+      // Use the global current round, not the player's last completed round
+      const currentRound = ls[currentRoundIndex];
+      if (currentRound) {
+        const holes = currentRound.linescores || [];
+        if (holes.length === 0) {
+          thru = "--";
+        } else if (holes.length < 18) {
+          thru = String(holes.length);
+        } else {
+          thru = "F";
+        }
       } else {
-        thru = "F";
+        thru = "--";
       }
     }
 
