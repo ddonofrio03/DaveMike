@@ -959,11 +959,6 @@ async function fetchScores() {
     const impliedCut = roundsCompleted < maxRoundsInField && !isWD;
     
     const isCut = explicitCut || impliedCut;
-    
-    // Debug: Log cut detection for Bryson
-    if (name === "Bryson DeChambeau") {
-      console.log(`${name}: rounds=${roundsCompleted}, maxRounds=${maxRoundsInField}, impliedCut=${impliedCut}, isCut=${isCut}`);
-    }
 
     const score = isCut ? "CUT" : isWD ? "WD" : (p.score || "E");
 
