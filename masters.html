@@ -948,7 +948,12 @@ async function fetchScores() {
     const isWD  = p.score === "WD"  || p.score === "wd";
     const explicitCut = p.score === "CUT" || p.score === "cut";
     
-    const isCut = explicitCut;
+    // Round 3 is in progress. Cut players have only 2 rounds of linescore data.
+    // In-the-field players have 3+ rounds.
+    const roundCount = p.linescores?.length ?? 0;
+    const impliedCut = roundCount <= 2 && !isWD;
+    
+    const isCut = explicitCut || impliedCut;
 
     const score = isCut ? "CUT" : isWD ? "WD" : (p.score || "E");
 
