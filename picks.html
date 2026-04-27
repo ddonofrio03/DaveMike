@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DaveMike — Masters 2026 Draft</title>
+<title>DaveMike — PGA 2026 Draft</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
@@ -156,7 +156,7 @@
 <body>
 <header>
   <div class="hdr">
-    <div><span class="title">DaveMike</span><span class="sub">Masters 2026 — Snake Draft</span></div>
+    <div><span class="title">DaveMike</span><span class="sub">PGA 2026 — Snake Draft</span></div>
     <div class="header-actions">
       <button class="restart-btn-ui" onclick="resetDraft()" id="restart-btn" style="display:none">Restart Draft</button>
       <span class="status-pill" id="status-pill">Lobby</span>
@@ -167,7 +167,7 @@
 
   <div class="screen active" id="screen-lobby">
     <div class="lobby-card">
-      <div class="lobby-title">Masters 2026 Draft</div>
+      <div class="lobby-title">PGA 2026 Draft</div>
       <div class="lobby-desc">Dave always hosts. Mike always joins. No room code. No typing. No nonsense.</div>
 
       <div class="lobby-section">
@@ -189,7 +189,7 @@
 
       <div id="room-area" style="display:none">
         <div class="room-display">
-          <div class="room-code" id="room-code-display">Fixed room: davemike-masters-2026</div>
+          <div class="room-code" id="room-code-display">Fixed room: davemike-pga-2026</div>
           <div class="room-hint">Dave should host first. Then Mike clicks Join Draft.</div>
         </div>
         <div class="lobby-label">Players</div>
@@ -246,8 +246,8 @@
   <div class="screen" id="screen-complete">
     <div class="complete-card">
       <div class="complete-title">Draft Complete!</div>
-      <div class="complete-sub">All picks are in. Copy the block below and paste it into masters.html.</div>
-      <div class="cfg-note">Open masters.html - find the CONFIG block near the top - replace the <strong>picks:</strong> and <strong>alts:</strong> sections with this.</div>
+      <div class="complete-sub">All picks are in. Copy the block below and paste it into pga.html.</div>
+      <div class="cfg-note">Open pga.html - find the CONFIG block near the top - replace the <strong>picks:</strong> and <strong>alts:</strong> sections with this.</div>
       <div class="code-block" id="config-output"></div>
       <button class="copy-btn" onclick="copyConfig()">Copy CONFIG</button>
       <button class="reset-btn" onclick="resetDraft()">Reset Draft</button>
@@ -262,7 +262,7 @@
 const BETTORS = ["Dave","Mike"];
 const COLORS  = {Dave:"#6CABDD",Mike:"#b03a2e"};
 const ROUNDS  = 6;
-const FIXED_ROOM = "davemike-masters-2026";
+const FIXED_ROOM = "davemike-pga-2026";
 
 const PEER_OPTIONS = {
   debug: 2,
