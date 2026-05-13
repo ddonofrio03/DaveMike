@@ -403,7 +403,11 @@ function createRoom() {
   });
 
   peer.on("error", e => {
-    err.textContent = "Connection error: " + e.type;
+    if (e.type === "unavailable-id") {
+      err.textContent = "Another host is already running. Close other tabs first.";
+    } else {
+      err.textContent = "Connection error: " + e.type;
+    }
     status.textContent = "";
   });
 }
@@ -480,7 +484,11 @@ function joinRoom() {
   });
 
   peer.on("error", e => {
-    err.textContent = "Connection error: " + e.type;
+    if (e.type === "peer-unavailable") {
+      err.textContent = "Dave hasn't started hosting yet. Have him click 'Dave Host Draft' first.";
+    } else {
+      err.textContent = "Connection error: " + e.type;
+    }
     status.textContent = "";
   });
 }
