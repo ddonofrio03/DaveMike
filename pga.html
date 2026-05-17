@@ -737,9 +737,10 @@ function relClass(n) {
 // Penalty pool is the picks of the CURRENT group only.
 function penaltyScore(roundKey, teamPlayers) {
   const teamSet = new Set(teamPlayers);
-  const allPicked = allDrafted();
+  const pool = new Set();
+  bettors().forEach(b => picksFor(b).forEach(p => pool.add(p)));
   let worst = null;
-  allPicked.forEach(name => {
+  pool.forEach(name => {
     if (teamSet.has(name)) return;
     const info = scoreMap[name];
     if (!info || info.isCut || info.isWD) return;
