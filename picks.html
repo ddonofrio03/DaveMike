@@ -146,6 +146,8 @@
   .b-pick.onclock{color:var(--green);font-weight:500;animation:blink 1.2s infinite;}
   @keyframes blink{0%,100%{opacity:1;}50%{opacity:0.35;}}
   .your-turn-banner{background:var(--green);color:white;text-align:center;padding:8px;border-radius:6px;margin-bottom:10px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;animation:blink 1.2s infinite;}
+  .identity-picker{background:var(--white);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:14px;}
+  .identity-prompt{font-family:'Bebas Neue',sans-serif;letter-spacing:1px;font-size:15px;margin-bottom:10px;}
 
   .code-block{background:var(--ink);color:#e8f5ee;padding:18px;border-radius:6px;font-family:'DM Mono',monospace;font-size:12px;line-height:1.7;overflow-x:auto;white-space:pre;}
   .copy-btn{margin-top:12px;font-size:16px;background:var(--green);color:var(--gold);border:none;}
@@ -191,6 +193,7 @@
     <div class="setup-card">
       <div class="setup-title">Set Draft Order</div>
       <div class="setup-desc">Drag names to set the order. Snake runs 6 rounds — 5 picks plus 1 alt round at the end.</div>
+      <div id="setup-identity"></div>
       <ul class="order-list" id="order-list"></ul>
       <div class="preview-snake">
         <div class="preview-label">Full draft order preview</div>
@@ -421,6 +424,21 @@ function renderNameGrid(){
   }).join("");
 }
 
+// Identity picker shown on the setup/draft screens for anyone who hasn't claimed a
+// seat yet (the lobby — the only other place to pick your name — is gone once the
+// draft starts). Taken seats stay clickable here so you can rejoin from a new device.
+function identityPickerHTML(){
+  if(myName) return "";
+  const btns = BETTORS.map(b => {
+    const rejoin = claimed.includes(b) ? ` <span style="font-size:11px;opacity:.65">(rejoin)</span>` : "";
+    return `<button class="name-btn" onclick="claimName('${b}')">${b}${rejoin}</button>`;
+  }).join("");
+  return `<div class="identity-picker">
+    <div class="identity-prompt">Tap your name to join the draft</div>
+    <div class="name-grid">${btns}</div>
+  </div>`;
+}
+
 function renderLobby(){
   document.getElementById("members-list").innerHTML = BETTORS.map(b => {
     const online = claimed.includes(b);
@@ -449,7 +467,9 @@ function renderLobby(){
 }
 
 function claimName(name){
-  if(claimed.includes(name) && name !== myName) return; // seat taken by someone else
+  // No early-out on a taken seat: in the lobby the button is disabled, so this only
+  // fires from the identity picker, where re-claiming your own seat (rejoin from a new
+  // device / after the draft started) must be allowed.
   const prev = myName;
   myName = name;
   localStorage.setItem(NAME_KEY, name);
@@ -475,6 +495,7 @@ function renderSetup(){
   const canDrag = isCommish();
   document.getElementById("setup-host-controls").style.display = canDrag ? "block" : "none";
   document.getElementById("setup-wait").style.display = canDrag ? "none" : "block";
+  document.getElementById("setup-identity").innerHTML = identityPickerHTML();
 
   document.getElementById("order-list").innerHTML = draftOrder.map((b, i) => `
     <li class="order-item${canDrag ? "" : " readonly"}"
@@ -564,9 +585,9 @@ function renderDraft(){
   document.getElementById("clock-info").innerHTML = (sequence.length - turn) + " picks left";
 
   const ytm = document.getElementById("your-turn-msg");
-  ytm.innerHTML = (t.bettor === myName)
+  ytm.innerHTML = identityPickerHTML() + ((t.bettor === myName)
     ? '<div class="your-turn-banner">Your pick! Choose a player below</div>'
-    : "";
+    : "");
 
   renderPlayerList();
   renderBoard();
