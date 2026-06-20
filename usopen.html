@@ -808,9 +808,12 @@ function isRoundComplete(roundKey) {
   // Signal 3 (R4 only): event status reports the tournament is post/completed.
   if (roundKey === "r4" && eventMeta.completed) return true;
 
-  // Signal 4 (R4 only): nearly every active player has 18 holes (≥ all-but-one
-  // and ≥ 90%). Handles ESPN sometimes reporting 17 of 18 holes for stragglers.
-  if (roundKey === "r4") {
+  // Signal 4: nearly every active player has finished 18 holes (≥ all-but-one
+  // and ≥ 90%). Handles a lone straggler, an unflagged mid-round WD/DQ, or ESPN
+  // reporting 17 of 18 holes — any of which would otherwise stall a round that
+  // is really over (e.g. R2 not paying out once the field is in, but R3 hasn't
+  // teed off and the cut isn't flagged yet).
+  {
     const eighteen = active.filter(p => (p[holesKey] ?? 0) === 18).length;
     if (eighteen >= active.length - 1 && eighteen / active.length >= 0.9) return true;
   }
