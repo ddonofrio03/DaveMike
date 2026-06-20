@@ -685,7 +685,7 @@ const CONFIG = {
 // STATE
 // ═══════════════════════════════════════════════
 let scoreMap = {};
-let eventMeta = { state: null, completed: false }; // ESPN event status
+let eventMeta = { state: null, completed: false, period: null }; // ESPN event status
 let countdown = CONFIG.refreshInterval;
 let countdownTimer = null;
 let fetching = false;
@@ -944,10 +944,13 @@ async function fetchScores() {
   if (!event) event = data.events?.[0];
   if (!event) throw new Error("No event found on ESPN scoreboard");
 
-  // Capture event status for round-completion fallback
+  // Capture event status for round-completion fallback. `period` is ESPN's
+  // current round number — it advances to 3 on moving day even before R3 tees
+  // off, which is one of the signals we use to know the cut is official.
   eventMeta = {
     state: event.status?.type?.state || null,
-    completed: event.status?.type?.completed === true
+    completed: event.status?.type?.completed === true,
+    period: event.status?.period ?? event.competitions?.[0]?.status?.period ?? null
   };
 
   document.getElementById("event-name").textContent = event.name || CONFIG.eventName;
@@ -963,27 +966,45 @@ async function fetchScores() {
   // R3 has started if any player has 3+ real rounds of data (i.e. their R3 has data).
   const r3HasStarted = maxRealRounds >= 3;
 
+  // Does ESPN itself mark this competitor cut? Some payloads carry it on the
+  // status object (e.g. "STATUS_CUT") or in the score field. Token-match so we
+  // don't trip on words like "cutoff". Shared by the gate below and the loop.
+  const espnStatusCut = (p) => {
+    if (p.score === "CUT" || p.score === "cut") return true;
+    const t = p.status?.type || {};
+    const hay = [t.name, t.description, t.shortDetail, t.detail, p.status?.displayValue]
+      .filter(Boolean).join(" ").toLowerCase();
+    return hay.split(/[^a-z]+/).includes("cut");
+  };
+
   // ── CUT LINE BEFORE R3 ──
-  // ESPN's scoreboard `score` field holds a player's relative-to-par total, not
-  // a "CUT" flag, and our round-count inference only kicks in once R3 has data.
-  // That leaves a gap on Saturday morning: the cut is official (and shown on
+  // ESPN's scoreboard `score` field usually holds a player's relative-to-par
+  // total, not a "CUT" flag, and our round-count inference only kicks in once R3
+  // has data. That leaves a gap on Saturday: the cut is official (and shown on
   // ESPN) but R3 hasn't teed off, so missed-cut picks still looked active here.
-  // Bridge it by computing the cut line ourselves once the field has finished
-  // two rounds — low CUT_PLACES and ties, the U.S. Open rule.
+  // Bridge it by computing the cut line ourselves — low CUT_PLACES and ties (the
+  // U.S. Open rule) — as soon as we're confident two rounds are in the books.
   const CUT_PLACES = CONFIG.cutPlaces || 60;
   let cutLine = null;
   if (!r3HasStarted) {
     const fieldNonWD = sorted.filter(p =>
       p.athlete?.displayName && !(p.score === "WD" || p.score === "wd")
     );
-    // R2 is final when essentially every non-WD player has 18 holes recorded in
-    // round 2 (one straggler/late WD tolerated). Per-hole data for R2 is present
-    // here because R3 hasn't begun, so it's the latest round.
-    const r2Done = fieldNonWD.filter(p =>
+    // "Two rounds are final" — established by ANY of three independent signals so
+    // a flaky feed (missing per-hole data, several WD/DQ players, an early period
+    // bump) can't stall the cut. None of these fire mid-Round-2:
+    //   1. ~all non-WD players have 18 holes recorded in R2 (per-hole, when present)
+    //   2. ESPN has advanced the event to round 3+ (moving day)
+    //   3. ESPN already flags at least one player cut — then trust it for the rest
+    const r2DoneByHoles = fieldNonWD.filter(p =>
       (p.linescores?.[1]?.linescores?.length ?? 0) === 18
     ).length;
-    const r2Complete = fieldNonWD.length > 0 &&
-      r2Done >= fieldNonWD.length - 1 && r2Done / fieldNonWD.length >= 0.95;
+    const nearlyAllR2Done = fieldNonWD.length > 0 &&
+      r2DoneByHoles / fieldNonWD.length >= 0.85;
+    const atRound3Plus = (eventMeta.period ?? 0) >= 3;
+    const espnFlaggedCut = sorted.some(espnStatusCut);
+    const r2Complete = nearlyAllR2Done || atRound3Plus || espnFlaggedCut;
+
     if (r2Complete) {
       // After 36 holes a player's `score` is their two-round total. Sort ascending;
       // the score in the CUT_PLACES-th slot is the line, and "and ties" means only
@@ -1008,18 +1029,11 @@ async function fetchScores() {
     const isWD = p.score === "WD" || p.score === "wd";
     const explicitCut = p.score === "CUT" || p.score === "cut";
 
-    // Some ESPN payloads carry a cut marker on the competitor's status object
-    // (e.g. "STATUS_CUT"). Harmless when absent. Token-match so we don't trip on
-    // words like "cutoff".
-    const statusCut = (() => {
-      const t = p.status?.type || {};
-      const hay = [t.name, t.description, t.shortDetail, t.detail, p.status?.displayValue]
-        .filter(Boolean).join(" ").toLowerCase();
-      return hay.split(/[^a-z]+/).includes("cut");
-    })();
+    // ESPN's own cut marker (score field or status object), when present.
+    const statusCut = espnStatusCut(p);
 
-    // Cut line (computed above) flags missed cuts on Saturday morning, before
-    // R3 data exists to infer from.
+    // Cut line (computed above) flags missed cuts on Saturday, before R3 data
+    // exists to infer from.
     const lineCut = cutLine !== null && !isWD && (() => {
       const v = parseRelScore(p.score);
       return v !== null && v > cutLine;
