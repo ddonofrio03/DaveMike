@@ -614,15 +614,15 @@
       </div>
     </div>
     <div class="header-right">
-      <span class="live-dot" id="live-indicator">LIVE</span>
+      <span class="live-dot" id="live-indicator">FINAL</span>
       <span class="last-update" id="last-update">--</span>
-      <button class="refresh-btn" id="refresh-btn" onclick="refresh()">Refresh</button>
+      <a class="refresh-btn" id="refresh-btn" href="https://www.espn.com/golf/leaderboard" target="_blank" rel="noopener">View on ESPN</a>
     </div>
   </div>
 </header>
 
 <div class="countdown-bar">
-  Next auto-refresh in <span id="countdown">60s</span>
+  Final · snapshot frozen from <a href="https://www.espn.com/golf/leaderboard" target="_blank" rel="noopener" style="color:var(--gold);text-decoration:underline">the ESPN leaderboard</a>
 </div>
 
 <div class="tabs-wrap">
@@ -643,6 +643,19 @@
   <div id="teamscores" class="section"></div>
   <div id="leaderboard" class="section"></div>
 </main>
+
+<script id="espn-snapshot" type="application/json">{"events":[{"id":"usopen-2026","name":"U.S. Open Championship","status":{"type":{"state":"post","completed":true},"period":4},"competitions":[{"competitors":[
+{"order":1,"score":"E","athlete":{"displayName":"Scottie Scheffler"},"linescores":[{"displayValue":"+2"},{"displayValue":"-2"},{"displayValue":"-1"},{"displayValue":"+1"}]},
+{"order":2,"score":"+2","athlete":{"displayName":"Xander Schauffele"},"linescores":[{"displayValue":"+1"},{"displayValue":"-4"},{"displayValue":"+3"},{"displayValue":"+2"}]},
+{"order":3,"score":"+2","athlete":{"displayName":"Tommy Fleetwood"},"linescores":[{"displayValue":"E"},{"displayValue":"+1"},{"displayValue":"E"},{"displayValue":"+1"}]},
+{"order":4,"score":"+3","athlete":{"displayName":"Ludvig Åberg"},"linescores":[{"displayValue":"-1"},{"displayValue":"+2"},{"displayValue":"+6"},{"displayValue":"-4"}]},
+{"order":5,"score":"+3","athlete":{"displayName":"Collin Morikawa"},"linescores":[{"displayValue":"+3"},{"displayValue":"-5"},{"displayValue":"+3"},{"displayValue":"+2"}]},
+{"order":6,"score":"+4","athlete":{"displayName":"Matt Fitzpatrick"},"linescores":[{"displayValue":"-3"},{"displayValue":"E"},{"displayValue":"+4"},{"displayValue":"+3"}]},
+{"order":7,"score":"+6","athlete":{"displayName":"Rory McIlroy"},"linescores":[{"displayValue":"-1"},{"displayValue":"+1"},{"displayValue":"+3"},{"displayValue":"+3"}]},
+{"order":8,"score":"+8","athlete":{"displayName":"Cameron Young"},"linescores":[{"displayValue":"+2"},{"displayValue":"E"},{"displayValue":"+3"},{"displayValue":"+3"}]},
+{"order":9,"score":"CUT","athlete":{"displayName":"Jon Rahm"},"linescores":[{"displayValue":"-2"},{"displayValue":"+8"}]},
+{"order":10,"score":"CUT","athlete":{"displayName":"Viktor Hovland"},"linescores":[{"displayValue":"+6"},{"displayValue":"-1"}]}
+]}]}]}</script>
 
 <script>
 // ═══════════════════════════════════════════════
@@ -912,9 +925,8 @@ function calcPoints() {
 // ESPN FETCH
 // ═══════════════════════════════════════════════
 async function fetchScores() {
-  const url = "https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard";
-  const res  = await fetch(url);
-  const data = await res.json();
+  // Tournament archived — final leaderboard read from the embedded snapshot above.
+  const data = JSON.parse(document.getElementById("espn-snapshot").textContent);
 
   let event;
   if (CONFIG.tournamentId) {
@@ -1483,9 +1495,6 @@ async function refresh() {
   if (fetching) return;
   fetching = true;
 
-  const btn = document.getElementById("refresh-btn");
-  btn.disabled = true;
-  btn.textContent = "Loading...";
   document.getElementById("status-msg").textContent = "";
   document.getElementById("status-msg").classList.remove("error");
 
@@ -1499,7 +1508,7 @@ async function refresh() {
     const now = new Date();
     document.getElementById("last-update").textContent =
       now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-    document.getElementById("live-indicator").textContent = "LIVE";
+    document.getElementById("live-indicator").textContent = "FINAL";
     resetCountdown();
   } catch (e) {
     document.getElementById("status-msg").textContent = "Error fetching scores: " + e.message;
@@ -1507,22 +1516,12 @@ async function refresh() {
     document.getElementById("live-indicator").textContent = "ERROR";
   } finally {
     fetching = false;
-    btn.disabled = false;
-    btn.textContent = "Refresh";
   }
 }
 
 function resetCountdown() {
-  countdown = CONFIG.refreshInterval;
+  // Tournament archived — snapshot is frozen, no auto-refresh.
   clearInterval(countdownTimer);
-  countdownTimer = setInterval(() => {
-    countdown--;
-    document.getElementById("countdown").textContent = countdown + "s";
-    if (countdown <= 0) {
-      clearInterval(countdownTimer);
-      refresh();
-    }
-  }, 1000);
 }
 
 function showTab(id) {
