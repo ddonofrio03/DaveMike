@@ -661,10 +661,19 @@ const CONFIG = {
   // $10 per round + Overall, no Top Pick payout. 5 categories. Buy-in $50 = max possible winnings.
   points: { R1: 10, R2: 10, R3: 10, R4: 10, Overall: 10, Winner: 0 },
   buyIn: 50,
-  // U.S. Open cut rule: low 60 and ties. Used to flag missed cuts on Saturday
-  // morning — after R2 is final but before R3 tees off, when ESPN's API hasn't
-  // yet given us a round-count signal to infer the cut from.
-  cutPlaces: 60,
+  // Cut rule: low CUT_PLACES and ties (The Open = low 70 and ties). The engine
+  // computes the actual cut line from the field's 36-hole totals; the number
+  // varies by event, so this must match the event (U.S. Open is 60).
+  cutPlaces: 70,
+
+  // Authoritative backstop — any name here is marked CUT regardless of the live
+  // feed. Missed the cut at The Open (Royal Birkdale); ESPN displayName spelling.
+  cutList: [
+    "Matt Fitzpatrick",   // Dave
+    "Viktor Hovland",     // Mike
+    "Justin Rose",        // Mike
+    "Wyndham Clark"       // Dave (alt)
+  ],
 
   bettors: ["Dave", "Mike"],
 
@@ -980,6 +989,9 @@ async function fetchScores() {
     return hay.split(/[^a-z]+/).includes("cut");
   };
 
+  // Authoritative hardcoded cut list — a name here is cut regardless of the feed.
+  const cutSet = new Set(CONFIG.cutList || []);
+
   const r3HasStarted = sorted.some(p => playedRound(p, 2));
 
   // Compute the cut line — low CUT_PLACES and ties (the U.S. Open rule) — once the
@@ -1021,6 +1033,9 @@ async function fetchScores() {
     const isWD = p.score === "WD" || p.score === "wd";
     const explicitCut = p.score === "CUT" || p.score === "cut";
 
+    // Authoritative backstop — a name in CONFIG.cutList is cut no matter what.
+    const listCut = cutSet.has(name);
+
     // ESPN's own cut marker (score field or status object), when present.
     const statusCut = espnStatusCut(p);
 
@@ -1032,7 +1047,7 @@ async function fetchScores() {
       return v !== null && v > cutLine;
     })();
 
-    const isCut = explicitCut || statusCut || lineCut;
+    const isCut = listCut || explicitCut || statusCut || lineCut;
 
     const score = isCut ? "CUT" : isWD ? "WD" : (p.score || "E");
 
