@@ -675,6 +675,15 @@ const CONFIG = {
     "Wyndham Clark"       // Dave (alt)
   ],
 
+  // ── DaveMike matched-cut cancellation (DaveMike only) ──
+  // When both bettors have cut-missers, the cut PENALTIES cancel pairwise: one
+  // cut from each side is waived. The players listed here are still cut and
+  // their real R1/R2 scores still count, but they take NO R3/R4 penalty — only
+  // the "excess" cut-misser on the side with more cuts still carries a penalty.
+  // The Open: Dave has 1 cut (Fitzpatrick), Mike has 2 (Hovland, Rose). One pair
+  // cancels (Fitzpatrick + Rose), leaving only Hovland penalized.
+  penaltyExempt: ["Matt Fitzpatrick", "Justin Rose"],
+
   bettors: ["Dave", "Mike"],
 
   // 5 picks each (DaveMike convention) + 1 alt. Populated post-draft.
@@ -760,6 +769,13 @@ function penaltyScore(roundKey, teamPlayers) {
   return worst + 2;
 }
 
+// DaveMike matched-cut cancellation: a cut player named in CONFIG.penaltyExempt
+// takes NO R3/R4 penalty (see the config comment). Their real R1/R2 scores still
+// count; only their cut penalty is waived.
+function isPenaltyExempt(player) {
+  return (CONFIG.penaltyExempt || []).includes(player);
+}
+
 function teamRoundTotal(bettor, roundKey) {
   const players = picksFor(bettor);
   const penaltyRounds = new Set(["r3", "r4"]);
@@ -775,7 +791,7 @@ function teamRoundTotal(bettor, roundKey) {
     if (actual !== null) {
       total += actual;
       hasAny = true;
-    } else if ((info.isCut || info.isWD) && penaltyRounds.has(roundKey)) {
+    } else if ((info.isCut || info.isWD) && penaltyRounds.has(roundKey) && !isPenaltyExempt(player)) {
       const pen = penaltyScore(roundKey, players);
       if (pen !== null) { total += pen; hasAny = true; }
     }
@@ -1200,15 +1216,22 @@ function renderScoreboard() {
       else if (thru === "F") holeDisplay = "Finished";
       else if (thru && thru !== "--") holeDisplay = "Hole " + thru;
 
+      const exempt = isCut && isPenaltyExempt(player);
       let penNote = "";
-      if (isCut) {
+      if (isCut && exempt) {
+        penNote = `<span class="penalty-tag" style="background:var(--cut);color:#fff">no pen</span>`;
+      } else if (isCut) {
         const pen = penaltyScore("r1", playerPicks);
         if (pen !== null) penNote = `<span class="penalty-tag">+2 pen</span>`;
       }
 
       let cutPenaltyDisplay = "";
       let cutPenaltyCls = "over";
-      if (isCut) {
+      if (isCut && exempt) {
+        // Matched-cut cancellation: no penalty for this player.
+        cutPenaltyDisplay = "—";
+        cutPenaltyCls = "cut";
+      } else if (isCut) {
         const r4started = Object.values(scoreMap).some(p => !p.isCut && !p.isWD && parseRelScore(p.r4) !== null);
         const r3started = Object.values(scoreMap).some(p => !p.isCut && !p.isWD && parseRelScore(p.r3) !== null);
         const pen = r4started ? penaltyScore("r4", playerPicks)
@@ -1399,14 +1422,14 @@ function renderTeamScores() {
       const r2 = info.r2 || "--";
       const r3hasStarted = Object.values(scoreMap).some(p => !p.isCut && !p.isWD && parseRelScore(p.r3) !== null);
       const r4hasStarted = Object.values(scoreMap).some(p => !p.isCut && !p.isWD && parseRelScore(p.r4) !== null);
-      const r3pen = (isCut && r3hasStarted) ? penaltyScore("r3", playerPicks) : null;
-      const r4pen = (isCut && r4hasStarted) ? penaltyScore("r4", playerPicks) : null;
-      const r3disp = isCut
-        ? (r3pen !== null ? `<span style='color:#c0392b;font-weight:500'>${fmtRel(r3pen)}</span><span style='color:var(--cut);font-size:10px;margin-left:3px'>pen</span>` : "<span style='color:var(--cut)'>--</span>")
-        : (info.r3 || "--");
-      const r4disp = isCut
-        ? (r4pen !== null ? `<span style='color:#c0392b;font-weight:500'>${fmtRel(r4pen)}</span><span style='color:var(--cut);font-size:10px;margin-left:3px'>pen</span>` : "<span style='color:var(--cut)'>--</span>")
-        : (info.r4 || "--");
+      const exempt = isCut && isPenaltyExempt(player);
+      const r3pen = (isCut && r3hasStarted && !exempt) ? penaltyScore("r3", playerPicks) : null;
+      const r4pen = (isCut && r4hasStarted && !exempt) ? penaltyScore("r4", playerPicks) : null;
+      const cutCell = (pen) => exempt
+        ? "<span style='color:var(--cut)'>—</span><span style='color:var(--cut);font-size:10px;margin-left:3px'>waived</span>"
+        : (pen !== null ? `<span style='color:#c0392b;font-weight:500'>${fmtRel(pen)}</span><span style='color:var(--cut);font-size:10px;margin-left:3px'>pen</span>` : "<span style='color:var(--cut)'>--</span>");
+      const r3disp = isCut ? cutCell(r3pen) : (info.r3 || "--");
+      const r4disp = isCut ? cutCell(r4pen) : (info.r4 || "--");
 
       const r1v = parseRelScore(info.r1);
       const r2v = parseRelScore(info.r2);
