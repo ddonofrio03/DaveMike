@@ -658,8 +658,13 @@ const CONFIG = {
   tournamentName: "The Open",
   eventName: "The Open · Royal Birkdale",
   refreshInterval: 60, // seconds
-  // $10 per round + Overall, no Top Pick payout. 5 categories. Buy-in $50 = max possible winnings.
-  points: { R1: 10, R2: 10, R3: 10, R4: 10, Overall: 10, Winner: 0 },
+  // Head-to-head: $10 per category won off the other guy, 5 categories, max $50.
+  // The engine is a pot model (Net = earned − buyIn), so the pot must equal the
+  // money collected: each guy stakes $10 a category, making the pot $20 and the
+  // winner's net swing +$10 (loser −$10). 5 × $20 = $100 = 2 × $50 buy-in, so
+  // the table nets to zero. (At $10 the pot was only half the buy-ins, which is
+  // why a clean sweep showed $0 instead of +$50.)
+  points: { R1: 20, R2: 20, R3: 20, R4: 20, Overall: 20, Winner: 0 },
   buyIn: 50,
   // Cut rule: low CUT_PLACES and ties (The Open = low 70 and ties). The engine
   // computes the actual cut line from the field's 36-hole totals; the number
@@ -1329,7 +1334,7 @@ function renderPoints() {
 
   function roundHeader(label, complete) {
     const lock = complete ? ' <span style="font-size:10px;opacity:0.5">&#x2713;</span>' : '';
-    return `<th>${label}${lock} <span style="opacity:.5;font-size:10px">($10)</span></th>`;
+    return `<th>${label}${lock} <span style="opacity:.5;font-size:10px">($20)</span></th>`;
   }
 
   function fmtCash(v) {
@@ -1350,7 +1355,7 @@ function renderPoints() {
   html += roundHeader("R3", r3done);
   html += roundHeader("R4", r4done);
   html += roundHeader("Overall", done);
-  html += `<th>Top Pick <span style="opacity:.5;font-size:10px">($10)</span></th>`;
+  html += `<th>Top Pick <span style="opacity:.5;font-size:10px">($0)</span></th>`;
   html += `<th>Earned</th><th>Buy-in</th><th>Net</th>`;
   html += '</tr></thead><tbody>';
 
@@ -1376,7 +1381,7 @@ function renderPoints() {
   html += '</tbody></table></div>';
 
   html += `<p style="font-size:12px;color:var(--ink-light);margin-top:10px;font-family:'DM Mono',monospace">
-    $50 buy-in &nbsp;·&nbsp; $10 to lowest team total each round · Overall paid on final result · no Top Pick payout · ties split evenly
+    $50 buy-in &nbsp;·&nbsp; $10 a category won off the other guy ($20 pot, $10 from each) · lowest team total each round · Overall paid on final result · no Top Pick payout · ties split evenly
   </p>`;
 
   el.innerHTML = html;
